@@ -1,16 +1,24 @@
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
 #include "MusicLibrary.h"
 #include "song.h"
-using namespace std;
 
-vector<Song*> songs;
+using namespace std;
 
 MusicLibrary::MusicLibrary() {}
 
 void MusicLibrary::addSong(const Song& song) {
     songs.push_back(new Song(song));
+}
+
+bool MusicLibrary::containsIgnoreCase(const std::string& str, const std::string& query) const {
+    std::string lowerStr = str;
+    std::string lowerQuery = query;
+    std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(), [](unsigned char c) { return std::tolower(c); });
+    std::transform(lowerQuery.begin(), lowerQuery.end(), lowerQuery.begin(), [](unsigned char c) { return std::tolower(c); });
+    return lowerStr.find(lowerQuery) != std::string::npos;
 }
 
 vector<Song*> MusicLibrary::filterByArtist(const string& artist) const {
@@ -30,6 +38,27 @@ vector<Song*> MusicLibrary::filterByAlbum(const string& album) const {
     }
     return result;
 };
+
+vector<Song*> MusicLibrary::filterByTitle(const string& title) const {
+    vector<Song*> result;
+    for (Song* song : songs) {
+        if (containsIgnoreCase(song->getTitle(), title))
+            result.push_back(song);
+    }
+    return result;
+};
+
+vector<Song*> MusicLibrary::search(const string& query) const {
+    vector<Song*> result;
+    for (Song* song : songs) {
+        if (containsIgnoreCase(song->getTitle(), query)
+            || containsIgnoreCase(song->getAlbum(), query)
+            || containsIgnoreCase(song->getArtist(), query)) {
+            result.push_back(song);
+        }
+    }
+    return result;
+}
 
 Song* MusicLibrary::getSong(int index) {
     if (index < 0 || index >= (int)songs.size())
